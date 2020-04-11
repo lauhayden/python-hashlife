@@ -30,16 +30,20 @@ def test_map_2x2():
 
 def test_str_to_state_map():
     with pytest.raises(ValueError):
-        str_to_state_map("", "1")
+        str_to_state_map("", "1", "0")
     with pytest.raises(ValueError):
-        str_to_state_map("0110", "")
+        str_to_state_map("0110", "", "0")
     with pytest.raises(ValueError):
-        str_to_state_map("0110", "12")
+        str_to_state_map("0110", "1", "")
     with pytest.raises(ValueError):
-        str_to_state_map("123", "1")
+        str_to_state_map("0110", "12", "0")
     with pytest.raises(ValueError):
-        str_to_state_map("123456789", "1")
-    m = str_to_state_map("0110", '1')
+        str_to_state_map("0110", "1", "01")
+    with pytest.raises(ValueError):
+        str_to_state_map("123", "1", "0")
+    with pytest.raises(ValueError):
+        str_to_state_map("123456789", "1", "0")
+    m = str_to_state_map("0110", '1', '0')
     assert m.rows == [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
     assert m.level == 1
         
@@ -54,12 +58,12 @@ class TestNode:
     @pytest.mark.parametrize("onehot", range(4))
     def test_from_state_map_2x2_onehot(self, onehot):
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
-        n = Node.from_state_map(str_to_state_map("0" * onehot + "1" + "0" * (3 - onehot), "1"))
+        n = Node.from_state_map(str_to_state_map("0" * onehot + "1" + "0" * (3 - onehot), "1", "0"))
         assert n.level == 1
         assert (n.nw, n.ne, n.sw, n.se) == states
 
     def test_neighbors_alive_not_level_2(self):
-        n = Node.from_state_map(str_to_state_map("0110", "1"))
+        n = Node.from_state_map(str_to_state_map("0110", "1", "0"))
         with pytest.raises(ValueError):
             n.neighbors_alive()
 
@@ -67,7 +71,7 @@ class TestNode:
     @pytest.mark.parametrize("col", range(4))
     def test_neighbors_alive_onehot(self, row, col):
         strmap = "0" * 4 * row + "0" * col + "1" + "0" * (3 - col) + "0" * 4 * (3 - row)
-        n = Node.from_state_map(str_to_state_map(strmap, "1"))
+        n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
         alive = tuple(n.neighbors_alive())
         assert len(alive) == 4
         assert alive[0] == int((row < 3 and col < 3) and (row != 1 or col != 1))
@@ -77,10 +81,10 @@ class TestNode:
 
     def test_neighbors_alive_all_alive(self):
         strmap = "1" * 4 * 4
-        n = Node.from_state_map(str_to_state_map(strmap, "1"))
+        n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
         assert tuple(n.neighbors_alive()) == (8, 8, 8, 8)
 
     def test_neighbors_alive_border(self):
         strmap = "1111100110011111"
-        n = Node.from_state_map(str_to_state_map(strmap, "1"))
+        n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
         assert tuple(n.neighbors_alive()) == (5, 5, 5, 5)

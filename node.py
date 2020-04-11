@@ -62,11 +62,14 @@ class StateMap:
 
         
 
-def str_to_state_map(strmap, alive_char):
+def str_to_state_map(strmap, alive_char, dead_char):
     if not strmap:
         raise ValueError("malformed")
     if len(alive_char) != 1:
         raise ValueError("alive_char must be length 1")
+    if len(dead_char) != 1:
+        raise ValueError("dead_char must be length 1")
+    strmap = "".join(char if char in (alive_char, dead_char) else "" for char in strmap)
     sidelen = math.sqrt(len(strmap))
     if not sidelen.is_integer():
         raise ValueError("malformed")
