@@ -104,6 +104,8 @@ class Node:
 
     def neighbors_alive(self):
         """Evaluate how many neighbors are alive for a level 2 node"""
+        if self.level != 2:
+            raise ValueError("neighbors_alive only relevant for level 2 node")
         all_neighbors = (
             (self.nw.nw, self.nw.ne, self.nw.sw, self.ne.nw, self.ne.sw, self.sw.nw, self.sw.ne, self.se.nw),
             (self.nw.ne, self.nw.se, self.ne.nw, self.ne.ne, self.ne.se, self.sw.ne, self.se.nw, self.se.ne),
