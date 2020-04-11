@@ -40,7 +40,7 @@ def test_str_to_state_map():
     with pytest.raises(ValueError):
         str_to_state_map("123456789", "1")
     m = str_to_state_map("0110", '1')
-    assert m.rows == ((State.DEAD, State.ALIVE), (State.ALIVE, State.DEAD))
+    assert m.rows == [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
     assert m.level == 1
         
 class TestNode:

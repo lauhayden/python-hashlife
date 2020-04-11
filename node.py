@@ -39,26 +39,26 @@ class StateMap:
 
     @property
     def val(self, collapse=True):
-        sliced = tuple(map(lambda r: r[self.col_slice], self.rows[self.row_slice]))
+        sliced = list(map(lambda r: r[self.col_slice], self.rows[self.row_slice]))
         if collapse and len(sliced) == 1:
             return sliced[0][0]
         return sliced
 
     @property
     def nw(self):
-        return self.__class__(self.level // 2, self.rows, self._first_half(self.row_slice), self._first_half(self.col_slice))
+        return self.__class__(self.level - 1, self.rows, self._first_half(self.row_slice), self._first_half(self.col_slice))
     
     @property
     def ne(self):
-        return self.__class__(self.level // 2, self.rows, self._first_half(self.row_slice), self._second_half(self.col_slice))
+        return self.__class__(self.level - 1, self.rows, self._first_half(self.row_slice), self._second_half(self.col_slice))
 
     @property
     def sw(self):
-        return self.__class__(self.level // 2, self.rows, self._second_half(self.row_slice), self._first_half(self.col_slice))
+        return self.__class__(self.level - 1, self.rows, self._second_half(self.row_slice), self._first_half(self.col_slice))
 
     @property
     def se(self):
-        return self.__class__(self.level // 2, self.rows, self._second_half(self.row_slice), self._second_half(self.col_slice))
+        return self.__class__(self.level - 1, self.rows, self._second_half(self.row_slice), self._second_half(self.col_slice))
 
         
 
@@ -76,12 +76,12 @@ def str_to_state_map(strmap, alive_char):
     rows = []
     for row in range(sidelen):
         str_row = strmap[row * sidelen: (row + 1) * sidelen]
-        rows.append(tuple(State.ALIVE if char == alive_char else State.DEAD for char in str_row))
+        rows.append(list(State.ALIVE if char == alive_char else State.DEAD for char in str_row))
     level = 0
     while sidelen > 1:
         sidelen = sidelen // 2
         level += 1
-    return StateMap(level, tuple(rows))
+    return StateMap(level, rows)
 
 
 class Node:
