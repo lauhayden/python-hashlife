@@ -38,9 +38,9 @@ class StateMap:
         return slice(inslice.start + (inslice.stop - inslice.start) // 2, inslice.stop)
 
     @property
-    def val(self, collapse=True):
+    def val(self):
         sliced = list(map(lambda r: r[self.col_slice], self.rows[self.row_slice]))
-        if collapse and len(sliced) == 1:
+        if len(sliced) == 1:
             return sliced[0][0]
         return sliced
 
@@ -104,6 +104,26 @@ class Node:
         if state_map.level == 0:
             return state_map.val
         return cls(cls.from_state_map(state_map.nw), cls.from_state_map(state_map.ne), cls.from_state_map(state_map.sw), cls.from_state_map(state_map.se))
+
+    def as_state_map(self, state_map=None):
+        if state_map is not None and state_map.level != self.level:
+            raise ValueError("state_map level does not match")
+        if self.level == 1:
+            if state_map is None:
+                return StateMap(self.level, [[self.nw, self.ne], [self.sw, self.se]])
+            state_map.rows[state_map.row_slice.start][state_map.col_slice.start] = self.nw
+            state_map.rows[state_map.row_slice.start][state_map.col_slice.start + 1] = self.ne
+            state_map.rows[state_map.row_slice.start + 1][state_map.col_slice.start] = self.sw
+            state_map.rows[state_map.row_slice.start + 1][state_map.col_slice.start + 1] = self.se
+            return state_map
+        if state_map is None:
+            empty_rows = [[State.DEAD for _ in range(2 ** self.level)] for _ in range(2 ** self.level)]
+            state_map = StateMap(self.level, empty_rows)
+        self.nw.as_state_map(state_map.nw)
+        self.ne.as_state_map(state_map.ne)
+        self.sw.as_state_map(state_map.sw)
+        self.se.as_state_map(state_map.se)
+        return state_map
 
     def neighbors_alive(self):
         """Evaluate how many neighbors are alive for a level 2 node"""

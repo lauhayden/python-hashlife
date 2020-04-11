@@ -88,3 +88,26 @@ class TestNode:
         strmap = "1111100110011111"
         n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
         assert tuple(n.neighbors_alive()) == (5, 5, 5, 5)
+
+    @pytest.mark.parametrize("onehot", range(4))
+    @pytest.mark.parametrize("existing", [True, False])
+    def test_as_state_map_2x2_onehot(self, onehot, existing):
+        states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
+        n = Node(*states)
+        if existing:
+            state_map = StateMap(1, [[State.DEAD, State.DEAD], [State.DEAD, State.DEAD]], row_slice=slice(0, 2), col_slice=slice(0, 2))
+        else:
+            state_map = None
+        state_map = n.as_state_map(state_map)
+        assert state_map.rows == [[states[0], states[1]], [states[2], states[3]]]
+
+    def test_as_state_map_4x4(self):
+        states = (State.DEAD, State.ALIVE, State.ALIVE, State.DEAD)
+        n1 = Node(*states)
+        n2 = Node(n1, n1, n1, n1)
+        state_map = n2.as_state_map()
+        n1_state_map = [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
+        assert state_map.nw.val == n1_state_map
+        assert state_map.ne.val == n1_state_map
+        assert state_map.sw.val == n1_state_map
+        assert state_map.se.val == n1_state_map
