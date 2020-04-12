@@ -1,6 +1,6 @@
 import pytest
 
-from node import eval_rule, State, StateMap, str_to_state_map, Node
+from node import eval_rule, State, StateMap, str_to_state_map, state_map_to_str, Node
 
 def test_state():
     assert bool(State.ALIVE)
@@ -47,6 +47,10 @@ def test_str_to_state_map():
     assert m.rows == [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
     assert m.level == 1
         
+def test_state_map_to_str():
+    state_map = [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
+    assert state_map_to_str(state_map, "1", "0") == "0110"
+
 class TestNode:
     @pytest.mark.parametrize("onehot", range(4))
     def test_init_level1_onehot(self, onehot):

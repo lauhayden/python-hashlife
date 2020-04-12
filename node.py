@@ -87,6 +87,17 @@ def str_to_state_map(strmap, alive_char, dead_char):
     return StateMap(level, rows)
 
 
+def state_map_to_str(state_map, alive_char, dead_char):
+    char_list = []
+    for row in state_map:
+        for state in row:
+            if state.value:
+                char_list.append(alive_char)
+            else:
+                char_list.append(dead_char)
+    return "".join(char_list)
+
+
 class Node:
     ALL_NODES = {State.ALIVE, State.DEAD}
 
