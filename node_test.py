@@ -53,7 +53,7 @@ def test_state_map_to_str():
 
 class TestNode:
     @pytest.mark.parametrize("onehot", range(4))
-    def test_init_level1_onehot(self, onehot):
+    def test_init_2x2_onehot(self, onehot):
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
         n = Node(*states)
         assert n.level == 1
@@ -62,18 +62,18 @@ class TestNode:
     @pytest.mark.parametrize("onehot", range(4))
     def test_from_state_map_2x2_onehot(self, onehot):
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
-        n = Node.from_state_map(str_to_state_map("0" * onehot + "1" + "0" * (3 - onehot)))
+        n = Node.from_state_map(StateMap(1, [[states[0], states[1]], [states[2], states[3]]]))
         assert n.level == 1
         assert (n.nw, n.ne, n.sw, n.se) == states
 
-    def test_neighbors_alive_not_level_2(self):
-        n = Node.from_state_map(str_to_state_map("0110"))
+    def test_neighbors_alive_not_2x2(self):
+        n = Node.from_state_map(StateMap(1, [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]))
         with pytest.raises(ValueError):
             n.neighbors_alive()
 
     @pytest.mark.parametrize("row", range(4))
     @pytest.mark.parametrize("col", range(4))
-    def test_neighbors_alive_onehot(self, row, col):
+    def test_neighbors_alive_4x4_onehot(self, row, col):
         strmap = "0" * 4 * row + "0" * col + "1" + "0" * (3 - col) + "0" * 4 * (3 - row)
         n = Node.from_state_map(str_to_state_map(strmap))
         alive = tuple(n.neighbors_alive())
@@ -89,7 +89,12 @@ class TestNode:
         assert tuple(n.neighbors_alive()) == (8, 8, 8, 8)
 
     def test_neighbors_alive_border(self):
-        strmap = "1111100110011111"
+        strmap = (
+            "1111"
+            "1001"
+            "1001"
+            "1111"
+        )
         n = Node.from_state_map(str_to_state_map(strmap))
         assert tuple(n.neighbors_alive()) == (5, 5, 5, 5)
 
