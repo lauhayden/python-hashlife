@@ -192,3 +192,22 @@ class TestNode:
             "11"
             "11"
         )
+
+    def test_next_gen_glider(self):
+        strmap = (
+            "00000000"
+            "00000000"
+            "00|0100|00"
+            "00|0010|00"
+            "00|1110|00"
+            "00|0000|00"
+            "00000000"
+            "00000000"
+        )
+        node = Node.from_state_map(str_to_state_map(strmap))
+        assert state_map_to_str(node.next_gen().as_state_map()) == (
+            "0000"
+            "1010"
+            "0110"
+            "0100"
+        )
