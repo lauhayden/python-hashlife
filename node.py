@@ -99,16 +99,24 @@ def state_map_to_str(state_map, alive_char="1", dead_char="0"):
 
 
 class Node:
-    ALL_NODES = {State.ALIVE, State.DEAD}
+    # pylint: disable=no-member
+    # since we're initializing stuff in __new__, pylint can't detect members
+    ALL_NODES = {}
 
-    def __init__(self, nw, ne, sw, se):
+    def __new__(cls, nw, ne, sw, se):
+        canonized = cls.ALL_NODES.get((nw, ne, sw, se), None)
+        if canonized is not None:
+            return canonized
         if not (nw.level == ne.level == sw.level == se.level):
             raise ValueError("Inconsistent subnode levels")
-        self.level = nw.level + 1
-        self.nw = nw
-        self.ne = ne
-        self.sw = sw
-        self.se = se
+        instance = super().__new__(cls)
+        cls.ALL_NODES[(nw, ne, sw, se)] = instance
+        instance.level = nw.level + 1
+        instance.nw = nw
+        instance.ne = ne
+        instance.sw = sw
+        instance.se = se
+        return instance
 
     @classmethod
     def from_state_map(cls, state_map):

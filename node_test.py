@@ -52,12 +52,29 @@ def test_state_map_to_str():
     assert state_map_to_str(state_map) == "0110"
 
 class TestNode:
+    @pytest.fixture(autouse=True)
+    def clear_all_nodes(self):
+        try:
+            yield
+        finally:
+            Node.ALL_NODES = {}
+
     @pytest.mark.parametrize("onehot", range(4))
-    def test_init_2x2_onehot(self, onehot):
+    def test_new_2x2_onehot(self, onehot):
+        # pylint: disable=no-member
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
         n = Node(*states)
         assert n.level == 1
         assert (n.nw, n.ne, n.sw, n.se) == states
+
+    def test_new_canonization(self):
+        n1 = Node(State.DEAD, State.DEAD, State.DEAD, State.DEAD)
+        n2 = Node(State.DEAD, State.DEAD, State.DEAD, State.DEAD)
+        assert id(n1) == id(n2)
+        assert len(Node.ALL_NODES) == 1
+        n3 = Node(State.DEAD, State.ALIVE, State.DEAD, State.DEAD)
+        assert id(n1) != id(n3)
+        assert len(Node.ALL_NODES) == 2
 
     @pytest.mark.parametrize("onehot", range(4))
     def test_from_state_map_2x2_onehot(self, onehot):
