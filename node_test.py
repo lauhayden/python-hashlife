@@ -30,7 +30,7 @@ def test_map_2x2():
 
 def test_str_to_state_map():
     with pytest.raises(ValueError):
-        str_to_state_map("", "1", "0")
+        str_to_state_map("")
     with pytest.raises(ValueError):
         str_to_state_map("0110", "", "0")
     with pytest.raises(ValueError):
@@ -40,16 +40,16 @@ def test_str_to_state_map():
     with pytest.raises(ValueError):
         str_to_state_map("0110", "1", "01")
     with pytest.raises(ValueError):
-        str_to_state_map("123", "1", "0")
+        str_to_state_map("123")
     with pytest.raises(ValueError):
-        str_to_state_map("123456789", "1", "0")
+        str_to_state_map("123456789")
     m = str_to_state_map("0110", '1', '0')
     assert m.rows == [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
     assert m.level == 1
         
 def test_state_map_to_str():
     state_map = StateMap(1, [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]])
-    assert state_map_to_str(state_map, "1", "0") == "0110"
+    assert state_map_to_str(state_map) == "0110"
 
 class TestNode:
     @pytest.mark.parametrize("onehot", range(4))
@@ -62,12 +62,12 @@ class TestNode:
     @pytest.mark.parametrize("onehot", range(4))
     def test_from_state_map_2x2_onehot(self, onehot):
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
-        n = Node.from_state_map(str_to_state_map("0" * onehot + "1" + "0" * (3 - onehot), "1", "0"))
+        n = Node.from_state_map(str_to_state_map("0" * onehot + "1" + "0" * (3 - onehot)))
         assert n.level == 1
         assert (n.nw, n.ne, n.sw, n.se) == states
 
     def test_neighbors_alive_not_level_2(self):
-        n = Node.from_state_map(str_to_state_map("0110", "1", "0"))
+        n = Node.from_state_map(str_to_state_map("0110"))
         with pytest.raises(ValueError):
             n.neighbors_alive()
 
@@ -75,7 +75,7 @@ class TestNode:
     @pytest.mark.parametrize("col", range(4))
     def test_neighbors_alive_onehot(self, row, col):
         strmap = "0" * 4 * row + "0" * col + "1" + "0" * (3 - col) + "0" * 4 * (3 - row)
-        n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
+        n = Node.from_state_map(str_to_state_map(strmap))
         alive = tuple(n.neighbors_alive())
         assert len(alive) == 4
         assert alive[0] == int((row < 3 and col < 3) and (row != 1 or col != 1))
@@ -85,12 +85,12 @@ class TestNode:
 
     def test_neighbors_alive_all_alive(self):
         strmap = "1" * 4 * 4
-        n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
+        n = Node.from_state_map(str_to_state_map(strmap))
         assert tuple(n.neighbors_alive()) == (8, 8, 8, 8)
 
     def test_neighbors_alive_border(self):
         strmap = "1111100110011111"
-        n = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
+        n = Node.from_state_map(str_to_state_map(strmap))
         assert tuple(n.neighbors_alive()) == (5, 5, 5, 5)
 
     @pytest.mark.parametrize("onehot", range(4))
@@ -123,8 +123,8 @@ class TestNode:
             "0110"
             "0000"
         )
-        node = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
-        assert state_map_to_str(node.centered_subnode().as_state_map(), "1", "0") == (
+        node = Node.from_state_map(str_to_state_map(strmap))
+        assert state_map_to_str(node.centered_subnode().as_state_map()) == (
             "11"
             "11"
         )
@@ -142,10 +142,10 @@ class TestNode:
             "1000"
             "0000"
         )
-        west_node = Node.from_state_map(str_to_state_map(west, "1", "0"))
-        east_node = Node.from_state_map(str_to_state_map(east, "1", "0"))
+        west_node = Node.from_state_map(str_to_state_map(west))
+        east_node = Node.from_state_map(str_to_state_map(east))
         centered_node = Node.centered_horizontal_subnode(west_node, east_node)
-        assert state_map_to_str(centered_node.as_state_map(), "1", "0") == (
+        assert state_map_to_str(centered_node.as_state_map()) == (
             "11"
             "11"
         )
@@ -163,10 +163,10 @@ class TestNode:
             "0000"
             "0000"
         )
-        north_node = Node.from_state_map(str_to_state_map(north, "1", "0"))
-        south_node = Node.from_state_map(str_to_state_map(south, "1", "0"))
+        north_node = Node.from_state_map(str_to_state_map(north))
+        south_node = Node.from_state_map(str_to_state_map(south))
         centered_node = Node.centered_vertical_subnode(north_node, south_node)
-        assert state_map_to_str(centered_node.as_state_map(), "1", "0") == (
+        assert state_map_to_str(centered_node.as_state_map()) == (
             "11"
             "11"
         )
@@ -182,8 +182,8 @@ class TestNode:
             "00000000"
             "00000000"
         )
-        node = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
-        assert state_map_to_str(node.centered_subsubnode().as_state_map(), "1", "0") == (
+        node = Node.from_state_map(str_to_state_map(strmap))
+        assert state_map_to_str(node.centered_subsubnode().as_state_map()) == (
             "11"
             "11"
         )

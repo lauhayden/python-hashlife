@@ -62,7 +62,7 @@ class StateMap:
 
         
 
-def str_to_state_map(strmap, alive_char, dead_char):
+def str_to_state_map(strmap, alive_char="1", dead_char="0"):
     if not strmap:
         raise ValueError("malformed")
     if len(alive_char) != 1:
@@ -87,7 +87,7 @@ def str_to_state_map(strmap, alive_char, dead_char):
     return StateMap(level, rows)
 
 
-def state_map_to_str(state_map, alive_char, dead_char):
+def state_map_to_str(state_map, alive_char="1", dead_char="0"):
     char_list = []
     for row in state_map.rows:
         for state in row:
