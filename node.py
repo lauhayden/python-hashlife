@@ -89,7 +89,7 @@ def str_to_state_map(strmap, alive_char, dead_char):
 
 def state_map_to_str(state_map, alive_char, dead_char):
     char_list = []
-    for row in state_map:
+    for row in state_map.rows:
         for state in row:
             if state.value:
                 char_list.append(alive_char)
@@ -152,11 +152,11 @@ class Node:
         return self.__class__(self.nw.se, self.ne.sw, self.sw.ne, self.se.nw)
 
     @classmethod
-    def centered_horizontal(cls, w, e):
+    def centered_horizontal_subnode(cls, w, e):
         return cls(w.ne.se, e.nw.sw, w.se.ne, e.sw.nw)
 
     @classmethod
-    def centered_vertical(cls, n, s):
+    def centered_vertical_subnode(cls, n, s):
         return cls(n.sw.se, n.se.sw, s.nw.ne, s.ne.nw)
 
     def centered_subsubnode(self):
@@ -178,13 +178,13 @@ class Node:
 
         # recursive simulation
         n00 = self.nw.centered_subnode()
-        n01 = self.centered_horizontal(self.nw, self.ne)
+        n01 = self.centered_horizontal_subnode(self.nw, self.ne)
         n02 = self.ne.centered_subnode()
-        n10 = self.centered_vertical(self.nw, self.sw)
+        n10 = self.centered_vertical_subnode(self.nw, self.sw)
         n11 = self.centered_subsubnode()
-        n12 = self.centered_vertical(self.ne, self.se)
+        n12 = self.centered_vertical_subnode(self.ne, self.se)
         n20 = self.sw.centered_subnode()
-        n21 = self.centered_horizontal(self.sw, self.se)
+        n21 = self.centered_horizontal_subnode(self.sw, self.se)
         n22 = self.se.centered_subnode()
         return self.__class__(
             self.__class__(n00, n01, n10, n11).next_gen(),

@@ -48,7 +48,7 @@ def test_str_to_state_map():
     assert m.level == 1
         
 def test_state_map_to_str():
-    state_map = [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
+    state_map = StateMap(1, [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]])
     assert state_map_to_str(state_map, "1", "0") == "0110"
 
 class TestNode:
@@ -115,3 +115,75 @@ class TestNode:
         assert state_map.ne.val == n1_state_map
         assert state_map.sw.val == n1_state_map
         assert state_map.se.val == n1_state_map
+
+    def test_centered_subnode_4x4(self):
+        strmap = (
+            "0000"
+            "0110"
+            "0110"
+            "0000"
+        )
+        node = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
+        assert state_map_to_str(node.centered_subnode().as_state_map(), "1", "0") == (
+            "11"
+            "11"
+        )
+        
+    def test_centered_horizontal_subnode_4x4(self):
+        west = (
+            "0000"
+            "0001"
+            "0001"
+            "0000"
+        )
+        east = (
+            "0000"
+            "1000"
+            "1000"
+            "0000"
+        )
+        west_node = Node.from_state_map(str_to_state_map(west, "1", "0"))
+        east_node = Node.from_state_map(str_to_state_map(east, "1", "0"))
+        centered_node = Node.centered_horizontal_subnode(west_node, east_node)
+        assert state_map_to_str(centered_node.as_state_map(), "1", "0") == (
+            "11"
+            "11"
+        )
+
+    def test_centered_vertical_subnode_4x4(self):
+        north = (
+            "0000"
+            "0000"
+            "0000"
+            "0110"
+        )
+        south = (
+            "0110"
+            "0000"
+            "0000"
+            "0000"
+        )
+        north_node = Node.from_state_map(str_to_state_map(north, "1", "0"))
+        south_node = Node.from_state_map(str_to_state_map(south, "1", "0"))
+        centered_node = Node.centered_vertical_subnode(north_node, south_node)
+        assert state_map_to_str(centered_node.as_state_map(), "1", "0") == (
+            "11"
+            "11"
+        )
+
+    def test_centered_subsubnode_8x8(self):
+        strmap = (
+            "00000000"
+            "00000000"
+            "00000000"
+            "00011000"
+            "00011000"
+            "00000000"
+            "00000000"
+            "00000000"
+        )
+        node = Node.from_state_map(str_to_state_map(strmap, "1", "0"))
+        assert state_map_to_str(node.centered_subsubnode().as_state_map(), "1", "0") == (
+            "11"
+            "11"
+        )
