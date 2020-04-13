@@ -70,10 +70,10 @@ class TestNode:
     def test_new_canonization(self):
         n1 = Node(State.DEAD, State.DEAD, State.DEAD, State.DEAD)
         n2 = Node(State.DEAD, State.DEAD, State.DEAD, State.DEAD)
-        assert id(n1) == id(n2)
+        assert n1 is n2
         assert len(Node.ALL_NODES) == 1
         n3 = Node(State.DEAD, State.ALIVE, State.DEAD, State.DEAD)
-        assert id(n1) != id(n3)
+        assert n1 is not n3
         assert len(Node.ALL_NODES) == 2
 
     @pytest.mark.parametrize("onehot", range(4))
@@ -222,9 +222,12 @@ class TestNode:
             "00000000"
         )
         node = Node.from_state_map(str_to_state_map(strmap))
-        assert state_map_to_str(node.next_gen().as_state_map()) == (
+        assert node._next_gen is None
+        n_next = node.next_gen()
+        assert state_map_to_str(n_next.as_state_map()) == (
             "0000"
             "1010"
             "0110"
             "0100"
         )
+        assert node._next_gen is n_next

@@ -99,7 +99,7 @@ def state_map_to_str(state_map, alive_char="1", dead_char="0"):
 
 
 class Node:
-    # pylint: disable=no-member
+    # pylint: disable=no-member,access-member-before-definition
     # since we're initializing stuff in __new__, pylint can't detect members
     ALL_NODES = {}
 
@@ -116,6 +116,7 @@ class Node:
         instance.ne = ne
         instance.sw = sw
         instance.se = se
+        instance._next_gen = None
         return instance
 
     @classmethod
@@ -171,35 +172,38 @@ class Node:
         return self.__class__(self.nw.se.se, self.ne.sw.sw, self.sw.ne.ne, self.se.nw.nw)
 
     def next_gen(self):
+        if self._next_gen is not None:
+            return self._next_gen
         if self.level == 1:
             raise ValueError("Cannot call next_gen() on a level 1 node")
-
         if self.level == 2:
             # base case simulation
             nw_alive, ne_alive, sw_alive, se_alive = self.neighbors_alive()
-            return self.__class__(
+            n_next = self.__class__(
                 State(eval_rule(self.nw.se, nw_alive)),
                 State(eval_rule(self.ne.sw, ne_alive)),
                 State(eval_rule(self.sw.ne, sw_alive)),
                 State(eval_rule(self.se.nw, se_alive)),
             )
-
-        # recursive simulation
-        n00 = self.nw.centered_subnode()
-        n01 = self.centered_horizontal_subnode(self.nw, self.ne)
-        n02 = self.ne.centered_subnode()
-        n10 = self.centered_vertical_subnode(self.nw, self.sw)
-        n11 = self.centered_subsubnode()
-        n12 = self.centered_vertical_subnode(self.ne, self.se)
-        n20 = self.sw.centered_subnode()
-        n21 = self.centered_horizontal_subnode(self.sw, self.se)
-        n22 = self.se.centered_subnode()
-        return self.__class__(
-            self.__class__(n00, n01, n10, n11).next_gen(),
-            self.__class__(n01, n02, n11, n12).next_gen(),
-            self.__class__(n10, n11, n20, n21).next_gen(),
-            self.__class__(n11, n12, n21, n22).next_gen(),
-        )
+        else:
+            # recursive simulation
+            n00 = self.nw.centered_subnode()
+            n01 = self.centered_horizontal_subnode(self.nw, self.ne)
+            n02 = self.ne.centered_subnode()
+            n10 = self.centered_vertical_subnode(self.nw, self.sw)
+            n11 = self.centered_subsubnode()
+            n12 = self.centered_vertical_subnode(self.ne, self.se)
+            n20 = self.sw.centered_subnode()
+            n21 = self.centered_horizontal_subnode(self.sw, self.se)
+            n22 = self.se.centered_subnode()
+            n_next = self.__class__(
+                self.__class__(n00, n01, n10, n11).next_gen(),
+                self.__class__(n01, n02, n11, n12).next_gen(),
+                self.__class__(n10, n11, n20, n21).next_gen(),
+                self.__class__(n11, n12, n21, n22).next_gen(),
+            )
+        self._next_gen = n_next
+        return n_next
 
     def __bool__(self):
         raise RuntimeError("Cannot evaluate state of Node")
