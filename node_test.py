@@ -2,6 +2,7 @@ import pytest
 
 from node import eval_rule, State, StateMap, str_to_state_map, state_map_to_str, Node
 
+
 def test_state():
     assert bool(State.ALIVE)
     assert State.ALIVE
@@ -10,16 +11,19 @@ def test_state():
     assert not State.DEAD
     assert State.DEAD.level == 0  # pylint: disable=no-member
 
+
 def test_eval_rule_birth():
     assert eval_rule(State.DEAD, 3)
     for i in (1, 2, 4, 5, 6, 7, 8):
         assert not eval_rule(State.DEAD, i)
-    
+
+
 def test_eval_rule_survive():
     for i in (2, 3):
         assert eval_rule(State.ALIVE, i)
     for i in (1, 4, 5, 6, 7, 8):
         assert not eval_rule(State.ALIVE, i)
+
 
 def test_map_2x2():
     m = StateMap(1, ((State.DEAD, State.ALIVE), (State.ALIVE, State.DEAD)))
@@ -27,6 +31,7 @@ def test_map_2x2():
     assert m.ne.val == State.ALIVE
     assert m.sw.val == State.ALIVE
     assert m.se.val == State.DEAD
+
 
 def test_str_to_state_map():
     with pytest.raises(ValueError):
@@ -46,12 +51,15 @@ def test_str_to_state_map():
     m = str_to_state_map("0110", '1', '0')
     assert m.rows == [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]
     assert m.level == 1
-        
+
+
 def test_state_map_to_str():
     state_map = StateMap(1, [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]])
     assert state_map_to_str(state_map) == "0110"
 
+
 class TestNode:
+
     @pytest.fixture(autouse=True)
     def clear_all_nodes(self):
         try:
@@ -106,7 +114,7 @@ class TestNode:
         assert tuple(n.neighbors_alive()) == (8, 8, 8, 8)
 
     def test_neighbors_alive_border(self):
-        strmap = (
+        strmap = (  # yapf: disable
             "1111"
             "1001"
             "1001"
@@ -121,7 +129,11 @@ class TestNode:
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
         n = Node(*states)
         if existing:
-            state_map = StateMap(1, [[State.DEAD, State.DEAD], [State.DEAD, State.DEAD]], row_slice=slice(0, 2), col_slice=slice(0, 2))
+            state_map = StateMap(
+                1, [[State.DEAD, State.DEAD], [State.DEAD, State.DEAD]],
+                row_slice=slice(0, 2),
+                col_slice=slice(0, 2)
+            )
         else:
             state_map = None
         state_map = n.as_state_map(state_map)
@@ -139,7 +151,7 @@ class TestNode:
         assert state_map.se.val == n1_state_map
 
     def test_centered_subnode_4x4(self):
-        strmap = (
+        strmap = (  # yapf: disable
             "0000"
             "0110"
             "0110"
@@ -147,18 +159,19 @@ class TestNode:
         )
         node = Node.from_state_map(str_to_state_map(strmap))
         assert state_map_to_str(node.centered_subnode().as_state_map()) == (
+            # yapf: disable
             "11"
             "11"
         )
-        
+
     def test_centered_horizontal_subnode_4x4(self):
-        west = (
+        west = (  # yapf: disable
             "0000"
             "0001"
             "0001"
             "0000"
         )
-        east = (
+        east = (  # yapf: disable
             "0000"
             "1000"
             "1000"
@@ -167,19 +180,19 @@ class TestNode:
         west_node = Node.from_state_map(str_to_state_map(west))
         east_node = Node.from_state_map(str_to_state_map(east))
         centered_node = Node.centered_horizontal_subnode(west_node, east_node)
-        assert state_map_to_str(centered_node.as_state_map()) == (
+        assert state_map_to_str(centered_node.as_state_map()) == (  # yapf: disable
             "11"
             "11"
         )
 
     def test_centered_vertical_subnode_4x4(self):
-        north = (
+        north = (  # yapf: disable
             "0000"
             "0000"
             "0000"
             "0110"
         )
-        south = (
+        south = (  # yapf: disable
             "0110"
             "0000"
             "0000"
@@ -188,7 +201,7 @@ class TestNode:
         north_node = Node.from_state_map(str_to_state_map(north))
         south_node = Node.from_state_map(str_to_state_map(south))
         centered_node = Node.centered_vertical_subnode(north_node, south_node)
-        assert state_map_to_str(centered_node.as_state_map()) == (
+        assert state_map_to_str(centered_node.as_state_map()) == (  # yapf: disable
             "11"
             "11"
         )
@@ -206,6 +219,7 @@ class TestNode:
         )
         node = Node.from_state_map(str_to_state_map(strmap))
         assert state_map_to_str(node.centered_subsubnode().as_state_map()) == (
+            # yapf: disable
             "11"
             "11"
         )
@@ -225,6 +239,7 @@ class TestNode:
         assert node._next_gen is None
         n_next = node.next_gen()
         assert state_map_to_str(n_next.as_state_map()) == (
+            # yapf: disable
             "0000"
             "1010"
             "0110"

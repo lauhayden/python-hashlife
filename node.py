@@ -1,6 +1,7 @@
 import enum
 import math
 
+
 class State(enum.Enum):
     ALIVE = True
     DEAD = False
@@ -11,7 +12,8 @@ class State(enum.Enum):
     def __bool__(self):
         return self.value
 
-def eval_rule(cell, neighbors_alive, birth=frozenset((3,)), survive=frozenset((2,3))):
+
+def eval_rule(cell, neighbors_alive, birth=frozenset((3,)), survive=frozenset((2, 3))):
     if bool(cell):
         if neighbors_alive in survive:
             return True
@@ -20,7 +22,9 @@ def eval_rule(cell, neighbors_alive, birth=frozenset((3,)), survive=frozenset((2
         return True
     return False
 
+
 class StateMap:
+
     def __init__(self, level, rows, row_slice=None, col_slice=None):
         self.level = level
         self.rows = rows
@@ -31,7 +35,7 @@ class StateMap:
         if inslice is None:
             return slice(0, len(self.rows) // 2)
         return slice(inslice.start, inslice.start + (inslice.stop - inslice.start) // 2)
-    
+
     def _second_half(self, inslice):
         if inslice is None:
             return slice(len(self.rows) // 2, len(self.rows))
@@ -46,21 +50,32 @@ class StateMap:
 
     @property
     def nw(self):
-        return self.__class__(self.level - 1, self.rows, self._first_half(self.row_slice), self._first_half(self.col_slice))
-    
+        return self.__class__(
+            self.level - 1, self.rows, self._first_half(self.row_slice),
+            self._first_half(self.col_slice)
+        )
+
     @property
     def ne(self):
-        return self.__class__(self.level - 1, self.rows, self._first_half(self.row_slice), self._second_half(self.col_slice))
+        return self.__class__(
+            self.level - 1, self.rows, self._first_half(self.row_slice),
+            self._second_half(self.col_slice)
+        )
 
     @property
     def sw(self):
-        return self.__class__(self.level - 1, self.rows, self._second_half(self.row_slice), self._first_half(self.col_slice))
+        return self.__class__(
+            self.level - 1, self.rows, self._second_half(self.row_slice),
+            self._first_half(self.col_slice)
+        )
 
     @property
     def se(self):
-        return self.__class__(self.level - 1, self.rows, self._second_half(self.row_slice), self._second_half(self.col_slice))
+        return self.__class__(
+            self.level - 1, self.rows, self._second_half(self.row_slice),
+            self._second_half(self.col_slice)
+        )
 
-        
 
 def str_to_state_map(strmap, alive_char="1", dead_char="0"):
     if not strmap:
@@ -78,7 +93,7 @@ def str_to_state_map(strmap, alive_char="1", dead_char="0"):
         raise ValueError("malformed")
     rows = []
     for row in range(sidelen):
-        str_row = strmap[row * sidelen: (row + 1) * sidelen]
+        str_row = strmap[row * sidelen:(row + 1) * sidelen]
         rows.append(list(State.ALIVE if char == alive_char else State.DEAD for char in str_row))
     level = 0
     while sidelen > 1:
@@ -123,7 +138,10 @@ class Node:
     def from_state_map(cls, state_map):
         if state_map.level == 0:
             return state_map.val
-        return cls(cls.from_state_map(state_map.nw), cls.from_state_map(state_map.ne), cls.from_state_map(state_map.sw), cls.from_state_map(state_map.se))
+        return cls(
+            cls.from_state_map(state_map.nw), cls.from_state_map(state_map.ne),
+            cls.from_state_map(state_map.sw), cls.from_state_map(state_map.se)
+        )
 
     def as_state_map(self, state_map=None):
         if state_map is not None and state_map.level != self.level:
@@ -137,7 +155,7 @@ class Node:
             state_map.rows[state_map.row_slice.start + 1][state_map.col_slice.start + 1] = self.se
             return state_map
         if state_map is None:
-            empty_rows = [[State.DEAD for _ in range(2 ** self.level)] for _ in range(2 ** self.level)]
+            empty_rows = [[State.DEAD for _ in range(2**self.level)] for _ in range(2**self.level)]
             state_map = StateMap(self.level, empty_rows)
         self.nw.as_state_map(state_map.nw)
         self.ne.as_state_map(state_map.ne)
@@ -150,10 +168,22 @@ class Node:
         if self.level != 2:
             raise ValueError("neighbors_alive only relevant for level 2 node")
         all_neighbors = (
-            (self.nw.nw, self.nw.ne, self.nw.sw, self.ne.nw, self.ne.sw, self.sw.nw, self.sw.ne, self.se.nw),
-            (self.nw.ne, self.nw.se, self.ne.nw, self.ne.ne, self.ne.se, self.sw.ne, self.se.nw, self.se.ne),
-            (self.nw.sw, self.nw.se, self.ne.sw, self.sw.nw, self.sw.sw, self.sw.se, self.se.nw, self.se.sw),
-            (self.nw.se, self.ne.sw, self.ne.se, self.sw.ne, self.sw.se, self.se.ne, self.se.sw, self.se.se),
+            (
+                self.nw.nw, self.nw.ne, self.nw.sw, self.ne.nw, self.ne.sw, self.sw.nw, self.sw.ne,
+                self.se.nw
+            ),
+            (
+                self.nw.ne, self.nw.se, self.ne.nw, self.ne.ne, self.ne.se, self.sw.ne, self.se.nw,
+                self.se.ne
+            ),
+            (
+                self.nw.sw, self.nw.se, self.ne.sw, self.sw.nw, self.sw.sw, self.sw.se, self.se.nw,
+                self.se.sw
+            ),
+            (
+                self.nw.se, self.ne.sw, self.ne.se, self.sw.ne, self.sw.se, self.se.ne, self.se.sw,
+                self.se.se
+            ),
         )
         return (sum(bool(neighbor) for neighbor in neighbors) for neighbors in all_neighbors)
 
