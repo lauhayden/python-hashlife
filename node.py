@@ -13,16 +13,6 @@ class State(enum.Enum):
         return self.value
 
 
-def eval_rule(cell, neighbors_alive, birth=frozenset((3,)), survive=frozenset((2, 3))):
-    if bool(cell):
-        if neighbors_alive in survive:
-            return True
-        return False
-    if neighbors_alive in birth:
-        return True
-    return False
-
-
 class StateMap:
 
     def __init__(self, level, rows, row_slice=None, col_slice=None):
@@ -118,6 +108,8 @@ class Node:
     # since we're initializing stuff in __new__, pylint can't detect members
     ALL_NODES = {}
     ALL_EMPTY = {}
+    RULE_BIRTH = frozenset((3,))
+    RULE_SURVIVE = frozenset((2, 3))
 
     def __new__(cls, nw, ne, sw, se):
         canonized = cls.ALL_NODES.get((nw, ne, sw, se), None)
@@ -203,6 +195,16 @@ class Node:
         return (sum(bool(neighbor) for neighbor in neighbors) for neighbors in all_neighbors)
 
     @classmethod
+    def _eval_rule(cls, cell, neighbors_alive):
+        if bool(cell):
+            if neighbors_alive in cls.RULE_SURVIVE:
+                return True
+            return False
+        if neighbors_alive in cls.RULE_BIRTH:
+            return True
+        return False
+
+    @classmethod
     def centered_horizontal(cls, west, east):
         return cls(west.ne, east.nw, west.se, east.sw)
 
@@ -240,10 +242,10 @@ class Node:
             # base case simulation
             nw_alive, ne_alive, sw_alive, se_alive = self._neighbors_alive()
             n_next = self.__class__(
-                State(eval_rule(self.nw.se, nw_alive)),
-                State(eval_rule(self.ne.sw, ne_alive)),
-                State(eval_rule(self.sw.ne, sw_alive)),
-                State(eval_rule(self.se.nw, se_alive)),
+                State(self._eval_rule(self.nw.se, nw_alive)),
+                State(self._eval_rule(self.ne.sw, ne_alive)),
+                State(self._eval_rule(self.sw.ne, sw_alive)),
+                State(self._eval_rule(self.se.nw, se_alive)),
             )
         else:
             # recursive simulation

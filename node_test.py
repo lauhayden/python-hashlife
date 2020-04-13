@@ -1,6 +1,6 @@
 import pytest
 
-from node import eval_rule, State, StateMap, str_to_state_map, state_map_to_str, Node
+from node import State, StateMap, str_to_state_map, state_map_to_str, Node
 
 
 def test_state():
@@ -10,19 +10,6 @@ def test_state():
     assert not bool(State.DEAD)
     assert not State.DEAD
     assert State.DEAD.level == 0  # pylint: disable=no-member
-
-
-def test_eval_rule_birth():
-    assert eval_rule(State.DEAD, 3)
-    for i in (1, 2, 4, 5, 6, 7, 8):
-        assert not eval_rule(State.DEAD, i)
-
-
-def test_eval_rule_survive():
-    for i in (2, 3):
-        assert eval_rule(State.ALIVE, i)
-    for i in (1, 4, 5, 6, 7, 8):
-        assert not eval_rule(State.ALIVE, i)
 
 
 def test_map_2x2():
@@ -130,6 +117,17 @@ class TestNode:
         n = Node.from_state_map(str_to_state_map(strmap))
         assert tuple(n._neighbors_alive()) == (5, 5, 5, 5)
 
+    def test_eval_rule_birth(self):
+        assert Node._eval_rule(State.DEAD, 3)
+        for i in (1, 2, 4, 5, 6, 7, 8):
+            assert not Node._eval_rule(State.DEAD, i)
+
+    def test_eval_rule_survive(self):
+        for i in (2, 3):
+            assert Node._eval_rule(State.ALIVE, i)
+        for i in (1, 4, 5, 6, 7, 8):
+            assert not Node._eval_rule(State.ALIVE, i)
+
     @pytest.mark.parametrize("onehot", range(4))
     @pytest.mark.parametrize("existing", [True, False])
     def test_as_state_map_2x2_onehot(self, onehot, existing):
@@ -162,10 +160,7 @@ class TestNode:
             "01"
             "01"
         )
-        east = (
-            "10"
-            "10"
-        )
+        east = ("10" "10")
         west_node = Node.from_state_map(str_to_state_map(west))
         east_node = Node.from_state_map(str_to_state_map(east))
         centered_node = Node.centered_horizontal(west_node, east_node)
@@ -179,10 +174,7 @@ class TestNode:
             "00"
             "11"
         )
-        south = (
-            "11"
-            "00"
-        )
+        south = ("11" "00")
         north_node = Node.from_state_map(str_to_state_map(north))
         south_node = Node.from_state_map(str_to_state_map(south))
         centered_node = Node.centered_vertical(north_node, south_node)
@@ -255,7 +247,7 @@ class TestNode:
             "0100"
         )
         assert node._next_gen is n_next
-        
+
     def test_leap_gen_glider(self):
         # level 3 node, therefore computes 2 generations ahead
         strmap = (
