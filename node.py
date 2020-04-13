@@ -117,6 +117,7 @@ class Node:
     # pylint: disable=no-member,access-member-before-definition
     # since we're initializing stuff in __new__, pylint can't detect members
     ALL_NODES = {}
+    ALL_EMPTY = {}
 
     def __new__(cls, nw, ne, sw, se):
         canonized = cls.ALL_NODES.get((nw, ne, sw, se), None)
@@ -134,6 +135,19 @@ class Node:
         instance._next_gen = None
         instance._leap_gen = None
         return instance
+
+    @classmethod
+    def empty(cls, level):
+        if level == 0:
+            return State.DEAD
+        n_empty = cls.ALL_EMPTY.get(level, None)
+        if n_empty is not None:
+            return n_empty
+        n_empty = cls(
+            cls.empty(level - 1), cls.empty(level - 1), cls.empty(level - 1), cls.empty(level - 1)
+        )
+        cls.ALL_EMPTY[level] = n_empty
+        return n_empty
 
     @classmethod
     def from_state_map(cls, state_map):
@@ -198,6 +212,24 @@ class Node:
 
     def centered_subnode(self):
         return self.__class__(self.nw.se, self.ne.sw, self.sw.ne, self.se.nw)
+
+    def expand(self):
+        empty = self.empty(self.level - 1)
+        nw = self.__class__(empty, empty, empty, self.nw)
+        ne = self.__class__(empty, empty, self.ne, empty)
+        sw = self.__class__(empty, self.sw, empty, empty)
+        se = self.__class__(self.se, empty, empty, empty)
+        return self.__class__(nw, ne, sw, se)
+
+    def shrink(self):
+        should_be_empty = (
+            self.nw.nw, self.nw.ne, self.nw.sw, self.ne.nw, self.ne.ne, self.ne.se, self.sw.nw,
+            self.sw.sw, self.sw.se, self.se.ne, self.se.sw, self.se.se
+        )
+        for node in should_be_empty:
+            if node is not self.empty(self.level - 2):
+                raise ValueError("Cannot shrink")
+        return self.centered_subnode()
 
     def next_gen(self):
         if self._next_gen is not None:

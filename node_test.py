@@ -84,6 +84,13 @@ class TestNode:
         assert n1 is not n3
         assert len(Node.ALL_NODES) == 2
 
+    def test_empty_4x4(self):
+        n2 = Node.empty(2)
+        assert len(Node.ALL_EMPTY) == 2
+        n1 = Node.ALL_EMPTY[1]
+        assert (n1.nw, n1.ne, n1.sw, n1.se) == (State.DEAD, State.DEAD, State.DEAD, State.DEAD)
+        assert (n2.nw, n2.ne, n2.sw, n2.se) == (n1, n1, n1, n1)
+
     @pytest.mark.parametrize("onehot", range(4))
     def test_from_state_map_2x2_onehot(self, onehot):
         states = (State.DEAD,) * onehot + (State.ALIVE,) + (State.DEAD,) * (3 - onehot)
@@ -193,6 +200,34 @@ class TestNode:
         )
         node = Node.from_state_map(str_to_state_map(strmap))
         assert state_map_to_str(node.centered_subnode().as_state_map()) == (
+            # yapf: disable
+            "11"
+            "11"
+        )
+
+    def test_expand_2x2(self):
+        strmap = (  # yapf: disable
+            "11"
+            "11"
+        )
+        node = Node.from_state_map(str_to_state_map(strmap))
+        assert state_map_to_str(node.expand().as_state_map()) == (
+            # yapf: disable
+            "0000"
+            "0110"
+            "0110"
+            "0000"
+        )
+
+    def test_shrink_4x4(self):
+        strmap = (  # yapf: disable
+            "0000"
+            "0110"
+            "0110"
+            "0000"
+        )
+        node = Node.from_state_map(str_to_state_map(strmap))
+        assert state_map_to_str(node.shrink().as_state_map()) == (
             # yapf: disable
             "11"
             "11"
