@@ -101,14 +101,14 @@ class TestNode:
     def test_neighbors_alive_not_2x2(self):
         n = Node.from_state_map(StateMap(1, [[State.DEAD, State.ALIVE], [State.ALIVE, State.DEAD]]))
         with pytest.raises(ValueError):
-            n.neighbors_alive()
+            n._neighbors_alive()
 
     @pytest.mark.parametrize("row", range(4))
     @pytest.mark.parametrize("col", range(4))
     def test_neighbors_alive_4x4_onehot(self, row, col):
         strmap = "0" * 4 * row + "0" * col + "1" + "0" * (3 - col) + "0" * 4 * (3 - row)
         n = Node.from_state_map(str_to_state_map(strmap))
-        alive = tuple(n.neighbors_alive())
+        alive = tuple(n._neighbors_alive())
         assert len(alive) == 4
         assert alive[0] == int((row < 3 and col < 3) and (row != 1 or col != 1))
         assert alive[1] == int((row < 3 and col > 0) and (row != 1 or col != 2))
@@ -118,7 +118,7 @@ class TestNode:
     def test_neighbors_alive_all_alive(self):
         strmap = "1" * 4 * 4
         n = Node.from_state_map(str_to_state_map(strmap))
-        assert tuple(n.neighbors_alive()) == (8, 8, 8, 8)
+        assert tuple(n._neighbors_alive()) == (8, 8, 8, 8)
 
     def test_neighbors_alive_border(self):
         strmap = (  # yapf: disable
@@ -128,7 +128,7 @@ class TestNode:
             "1111"
         )
         n = Node.from_state_map(str_to_state_map(strmap))
-        assert tuple(n.neighbors_alive()) == (5, 5, 5, 5)
+        assert tuple(n._neighbors_alive()) == (5, 5, 5, 5)
 
     @pytest.mark.parametrize("onehot", range(4))
     @pytest.mark.parametrize("existing", [True, False])

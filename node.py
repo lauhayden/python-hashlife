@@ -178,7 +178,7 @@ class Node:
         self.se.as_state_map(state_map.se)
         return state_map
 
-    def neighbors_alive(self):
+    def _neighbors_alive(self):
         """Evaluate how many neighbors are alive for a level 2 node"""
         if self.level != 2:
             raise ValueError("neighbors_alive only relevant for level 2 node")
@@ -238,7 +238,7 @@ class Node:
             raise ValueError("Cannot call next_gen() on a level 1 node")
         if self.level == 2:
             # base case simulation
-            nw_alive, ne_alive, sw_alive, se_alive = self.neighbors_alive()
+            nw_alive, ne_alive, sw_alive, se_alive = self._neighbors_alive()
             n_next = self.__class__(
                 State(eval_rule(self.nw.se, nw_alive)),
                 State(eval_rule(self.ne.sw, ne_alive)),
