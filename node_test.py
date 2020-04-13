@@ -150,6 +150,40 @@ class TestNode:
         assert state_map.sw.val == n1_state_map
         assert state_map.se.val == n1_state_map
 
+    def test_centered_horizontal_2x2(self):
+        west = (  #yapf: disable
+            "01"
+            "01"
+        )
+        east = (
+            "10"
+            "10"
+        )
+        west_node = Node.from_state_map(str_to_state_map(west))
+        east_node = Node.from_state_map(str_to_state_map(east))
+        centered_node = Node.centered_horizontal(west_node, east_node)
+        assert state_map_to_str(centered_node.as_state_map()) == (  # yapf: disable
+            "11"
+            "11"
+        )
+
+    def test_centered_vertical_2x2(self):
+        north = (  #yapf: disable
+            "00"
+            "11"
+        )
+        south = (
+            "11"
+            "00"
+        )
+        north_node = Node.from_state_map(str_to_state_map(north))
+        south_node = Node.from_state_map(str_to_state_map(south))
+        centered_node = Node.centered_vertical(north_node, south_node)
+        assert state_map_to_str(centered_node.as_state_map()) == (  # yapf: disable
+            "11"
+            "11"
+        )
+
     def test_centered_subnode_4x4(self):
         strmap = (  # yapf: disable
             "0000"
@@ -159,66 +193,6 @@ class TestNode:
         )
         node = Node.from_state_map(str_to_state_map(strmap))
         assert state_map_to_str(node.centered_subnode().as_state_map()) == (
-            # yapf: disable
-            "11"
-            "11"
-        )
-
-    def test_centered_horizontal_subnode_4x4(self):
-        west = (  # yapf: disable
-            "0000"
-            "0001"
-            "0001"
-            "0000"
-        )
-        east = (  # yapf: disable
-            "0000"
-            "1000"
-            "1000"
-            "0000"
-        )
-        west_node = Node.from_state_map(str_to_state_map(west))
-        east_node = Node.from_state_map(str_to_state_map(east))
-        centered_node = Node.centered_horizontal_subnode(west_node, east_node)
-        assert state_map_to_str(centered_node.as_state_map()) == (  # yapf: disable
-            "11"
-            "11"
-        )
-
-    def test_centered_vertical_subnode_4x4(self):
-        north = (  # yapf: disable
-            "0000"
-            "0000"
-            "0000"
-            "0110"
-        )
-        south = (  # yapf: disable
-            "0110"
-            "0000"
-            "0000"
-            "0000"
-        )
-        north_node = Node.from_state_map(str_to_state_map(north))
-        south_node = Node.from_state_map(str_to_state_map(south))
-        centered_node = Node.centered_vertical_subnode(north_node, south_node)
-        assert state_map_to_str(centered_node.as_state_map()) == (  # yapf: disable
-            "11"
-            "11"
-        )
-
-    def test_centered_subsubnode_8x8(self):
-        strmap = (
-            "00000000"
-            "00000000"
-            "00000000"
-            "00011000"
-            "00011000"
-            "00000000"
-            "00000000"
-            "00000000"
-        )
-        node = Node.from_state_map(str_to_state_map(strmap))
-        assert state_map_to_str(node.centered_subsubnode().as_state_map()) == (
             # yapf: disable
             "11"
             "11"
@@ -246,3 +220,27 @@ class TestNode:
             "0100"
         )
         assert node._next_gen is n_next
+        
+    def test_leap_gen_glider(self):
+        # level 3 node, therefore computes 2 generations ahead
+        strmap = (
+            "00000000"
+            "00000000"
+            "00|0100|00"
+            "00|0010|00"
+            "00|1110|00"
+            "00|0000|00"
+            "00000000"
+            "00000000"
+        )
+        node = Node.from_state_map(str_to_state_map(strmap))
+        assert node._leap_gen is None
+        n_next = node.leap_gen()
+        assert state_map_to_str(n_next.as_state_map()) == (
+            # yapf: disable
+            "0000"
+            "0010"
+            "1010"
+            "0110"
+        )
+        assert node._leap_gen is n_next

@@ -132,6 +132,7 @@ class Node:
         instance.sw = sw
         instance.se = se
         instance._next_gen = None
+        instance._leap_gen = None
         return instance
 
     @classmethod
@@ -187,19 +188,16 @@ class Node:
         )
         return (sum(bool(neighbor) for neighbor in neighbors) for neighbors in all_neighbors)
 
+    @classmethod
+    def centered_horizontal(cls, west, east):
+        return cls(west.ne, east.nw, west.se, east.sw)
+
+    @classmethod
+    def centered_vertical(cls, north, south):
+        return cls(north.sw, north.se, south.nw, south.ne)
+
     def centered_subnode(self):
         return self.__class__(self.nw.se, self.ne.sw, self.sw.ne, self.se.nw)
-
-    @classmethod
-    def centered_horizontal_subnode(cls, w, e):
-        return cls(w.ne.se, e.nw.sw, w.se.ne, e.sw.nw)
-
-    @classmethod
-    def centered_vertical_subnode(cls, n, s):
-        return cls(n.sw.se, n.se.sw, s.nw.ne, s.ne.nw)
-
-    def centered_subsubnode(self):
-        return self.__class__(self.nw.se.se, self.ne.sw.sw, self.sw.ne.ne, self.se.nw.nw)
 
     def next_gen(self):
         if self._next_gen is not None:
@@ -218,13 +216,13 @@ class Node:
         else:
             # recursive simulation
             n00 = self.nw.centered_subnode()
-            n01 = self.centered_horizontal_subnode(self.nw, self.ne)
+            n01 = self.centered_horizontal(self.nw, self.ne).centered_subnode()
             n02 = self.ne.centered_subnode()
-            n10 = self.centered_vertical_subnode(self.nw, self.sw)
-            n11 = self.centered_subsubnode()
-            n12 = self.centered_vertical_subnode(self.ne, self.se)
+            n10 = self.centered_vertical(self.nw, self.sw).centered_subnode()
+            n11 = self.centered_subnode().centered_subnode()
+            n12 = self.centered_vertical(self.ne, self.se).centered_subnode()
             n20 = self.sw.centered_subnode()
-            n21 = self.centered_horizontal_subnode(self.sw, self.se)
+            n21 = self.centered_horizontal(self.sw, self.se).centered_subnode()
             n22 = self.se.centered_subnode()
             n_next = self.__class__(
                 self.__class__(n00, n01, n10, n11).next_gen(),
@@ -234,6 +232,34 @@ class Node:
             )
         self._next_gen = n_next
         return n_next
+
+    def leap_gen(self):
+        if self._leap_gen is not None:
+            return self._leap_gen
+        if self.level == 1:
+            raise ValueError("Cannot call next_gen() on a level 1 node")
+        if self.level == 2:
+            # base case simulation
+            n_leap = self.next_gen()
+        else:
+            # leap 2 ** (self.level - 2) generations ahead
+            n00 = self.nw.leap_gen()
+            n01 = self.centered_horizontal(self.nw, self.ne).leap_gen()
+            n02 = self.ne.leap_gen()
+            n10 = self.centered_vertical(self.nw, self.sw).leap_gen()
+            n11 = self.centered_subnode().leap_gen()
+            n12 = self.centered_vertical(self.ne, self.se).leap_gen()
+            n20 = self.sw.leap_gen()
+            n21 = self.centered_horizontal(self.sw, self.se).leap_gen()
+            n22 = self.se.leap_gen()
+            n_leap = self.__class__(
+                self.__class__(n00, n01, n10, n11).leap_gen(),
+                self.__class__(n01, n02, n11, n12).leap_gen(),
+                self.__class__(n10, n11, n20, n21).leap_gen(),
+                self.__class__(n11, n12, n21, n22).leap_gen(),
+            )
+        self._leap_gen = n_leap
+        return n_leap
 
     def __bool__(self):
         raise RuntimeError("Cannot evaluate state of Node")
